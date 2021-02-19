@@ -4,6 +4,8 @@
 #include "FrameObject.h"
 #include "ofxCv.h"
 #include "UDPCenter.h"
+#include "ofVideoPlayer.h"
+#include "ofGstVideoPlayer.h"
 
 
 class ofApp : public ofBaseApp{
@@ -12,6 +14,7 @@ public:
     void setup();
     void update();
     void draw();
+    void exit();
     
     void keyPressed(int key);
     void keyReleased(int key);
@@ -32,6 +35,8 @@ public:
     
     uint64 randomResizeTimer;
     uint64 nextRandomResizeTime;
+    
+    ofVideoPlayer vp;
     
     
 };

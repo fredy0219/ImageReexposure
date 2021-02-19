@@ -13,6 +13,10 @@ void ofApp::setup(){
     randomResizeTimer = 0;
     nextRandomResizeTime = 0;
     frameObject.setup();
+    
+    //vp.setPlayer(ofPtr<ofGstVideoPlayer>(new ofGstVideoPlayer));
+    //vp.load("led.mp4");
+    //vp.play();
 }
 
 //--------------------------------------------------------------
@@ -26,13 +30,13 @@ void ofApp::update(){
         randomResizeTimer = ofGetElapsedTimeMillis();
     }
     
-    
-    
     if(udpCenter.getImageName(image_name)){
         frameObject.load(image_name);
     }
     //
     frameObject.update();
+    
+    //vp.update();
     
 }
 
@@ -41,6 +45,12 @@ void ofApp::draw(){
     ofBackground(255, 255, 255);
     
     frameObject.draw();
+    //vp.draw(0,0);
+    
+}
+
+void ofApp::exit(){
+    frameObject.exit();
 }
 
 //--------------------------------------------------------------
