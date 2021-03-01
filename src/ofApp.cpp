@@ -1,5 +1,6 @@
 #include "ofApp.h"
-
+#include <regex>
+#include <boost/lexical_cast.hpp>
 using namespace cv;
 using namespace ofxCv;
 
@@ -8,11 +9,13 @@ using namespace ofxCv;
 void ofApp::setup(){
     
     ofSetFullscreen(1);
-    
+    ofHideCursor();
     udpCenter.setup();
     randomResizeTimer = 0;
     nextRandomResizeTime = 0;
     frameObject.setup();
+    
+    
     
     //vp.setPlayer(ofPtr<ofGstVideoPlayer>(new ofGstVideoPlayer));
     //vp.load("led.mp4");
@@ -24,15 +27,45 @@ void ofApp::update(){
     
     udpCenter.update();
     
-    if(ofGetElapsedTimeMillis() - randomResizeTimer > nextRandomResizeTime ){
-        frameObject.randomResizeVector();
-        nextRandomResizeTime = (int)ofRandom(10000,20000);
-        randomResizeTimer = ofGetElapsedTimeMillis();
+//    cout<<isOnlyBackground << "," << frameObject.currentImageSize<<endl;
+    if(isOnlyBackground == false && frameObject.currentImageSize == 0 && frameObject.initImageSize == 3){
+        isOnlyBackground = true;
+        backgroundTimer = ofGetElapsedTimeMillis();
+    }else if(frameObject.currentImageSize != 0 && frameObject.initImageSize == 3){
+        isOnlyBackground = false;
     }
     
     if(udpCenter.getImageName(image_name)){
-        frameObject.load(image_name);
+        
+        if(hasEnding(image_name, ".jpg")||
+           hasEnding(image_name, ".JPG")||
+           hasEnding(image_name, ".png")||
+           hasEnding(image_name, ".PNG")||
+           hasEnding(image_name, ".tiff")||
+           hasEnding(image_name, ".TIFF")){
+            frameObject.load("./Downloads/" + image_name, true);
+            isOnlyBackground = false;
+            randomResizeTimer = ofGetElapsedTimeMillis();
+        }else if(hasEnding(image_name, ".mp4")||
+                 hasEnding(image_name, ".MP4")||
+                 hasEnding(image_name, ".m4v")||
+                 hasEnding(image_name, ".M4V")){
+            frameObject.loadVideo("./Downloads/" + image_name, true, (int)ofRandom(0,3));
+            isOnlyBackground = false;
+            randomResizeTimer = ofGetElapsedTimeMillis();
+        }
+        
     }
+    
+    if(ofGetElapsedTimeMillis() - backgroundTimer > 5000){
+        isOnlyBackground = false;
+    }
+    
+    if(ofGetElapsedTimeMillis() - randomResizeTimer > 5000 && isOnlyBackground == false){
+        frameObject.randomResizeVector();
+        randomResizeTimer = ofGetElapsedTimeMillis();
+    }
+    
     //
     frameObject.update();
     
@@ -45,17 +78,24 @@ void ofApp::draw(){
     ofBackground(255, 255, 255);
     
     frameObject.draw();
-    //vp.draw(0,0);
-    
 }
 
 void ofApp::exit(){
     frameObject.exit();
+    udpCenter.exit();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
+}
+
+bool ofApp::hasEnding (std::string const &fullString, std::string const &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
 }
 
 //--------------------------------------------------------------

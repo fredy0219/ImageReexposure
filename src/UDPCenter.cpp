@@ -15,7 +15,7 @@ void UDPCenter::setup(){
     udp_cue.Bind(11999);
     udp_cue.SetNonBlocking(true);
     
-    reg_standard = regex("\/(add)\/([a-zA-Z0-9\_\.]+)\/");
+    reg_standard = regex("\/(add)\/([a-zA-Z0-9\-_. ]+)\/");
 }
 
 void UDPCenter::update(){
@@ -30,13 +30,14 @@ void UDPCenter::update(){
         new_image_name = string(udp_message);
         
         if(regex_match(new_image_name, cue_match, reg_standard)){
-            //            for(int i = 0 ; i < cue_match.size() ;i++)
-            //                cout<<cue_match[i]<<endl;
+            cout<<"match"<<endl;
+            cout<<new_image_name<<endl;
             
             new_image_name = cue_match[2];
+            is_new_message_enable = true;
+        }else{
+            cout<<"not match"<<endl;
         }
-        cout<<new_image_name<<endl;
-        is_new_message_enable = true;
     }
 }
 
