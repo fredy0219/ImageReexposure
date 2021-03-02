@@ -9,7 +9,7 @@ using namespace ofxCv;
 void ofApp::setup(){
     
     ofSetFullscreen(1);
-    ofHideCursor();
+//    ofHideCursor();
     udpCenter.setup();
     randomResizeTimer = 0;
     nextRandomResizeTime = 0;
@@ -28,10 +28,10 @@ void ofApp::update(){
     udpCenter.update();
     
 //    cout<<isOnlyBackground << "," << frameObject.currentImageSize<<endl;
-    if(isOnlyBackground == false && frameObject.currentImageSize == 0 && frameObject.initImageSize == 3){
+    if(isOnlyBackground == false && frameObject.currentImageSize == 1/*0*/ /*&& frameObject.initImageSize == 3*/){
         isOnlyBackground = true;
         backgroundTimer = ofGetElapsedTimeMillis();
-    }else if(frameObject.currentImageSize != 0 && frameObject.initImageSize == 3){
+    }else if(frameObject.currentImageSize != 1/*0*/ /*&& frameObject.initImageSize == 3*/){
         isOnlyBackground = false;
     }
     
@@ -39,6 +39,8 @@ void ofApp::update(){
         
         if(hasEnding(image_name, ".jpg")||
            hasEnding(image_name, ".JPG")||
+           hasEnding(image_name, ".jpeg")||
+           hasEnding(image_name, ".JPEG")||
            hasEnding(image_name, ".png")||
            hasEnding(image_name, ".PNG")||
            hasEnding(image_name, ".tiff")||
@@ -46,18 +48,18 @@ void ofApp::update(){
             frameObject.load("./Downloads/" + image_name, true);
             isOnlyBackground = false;
             randomResizeTimer = ofGetElapsedTimeMillis();
-        }else if(hasEnding(image_name, ".mp4")||
+        }/*else if(hasEnding(image_name, ".mp4")||
                  hasEnding(image_name, ".MP4")||
                  hasEnding(image_name, ".m4v")||
                  hasEnding(image_name, ".M4V")){
             frameObject.loadVideo("./Downloads/" + image_name, true, (int)ofRandom(0,3));
             isOnlyBackground = false;
             randomResizeTimer = ofGetElapsedTimeMillis();
-        }
+        }*/
         
     }
     
-    if(ofGetElapsedTimeMillis() - backgroundTimer > 5000){
+    if(ofGetElapsedTimeMillis() - backgroundTimer > 60000*2/*5000*/){
         isOnlyBackground = false;
     }
     
@@ -75,7 +77,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    ofBackground(255, 255, 255);
+    ofBackground(0);
     
     frameObject.draw();
 }

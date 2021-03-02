@@ -16,7 +16,8 @@ FrameObject::FrameObject(){
 }
 
 void FrameObject::setup(){
-    
+    image_result = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);
+    loadVideo("./Downloads/video.mp4", false, 0);
 }
 
 void FrameObject::draw(){
@@ -25,25 +26,25 @@ void FrameObject::draw(){
 
 void FrameObject::update(){
     
-    if(initImageSize < 3){
-        string path = "./Downloads";
-        ofDirectory dir(path);
-        dir.allowExt("JPG");
-        dir.allowExt("jpg");
-        dir.allowExt("jpeg");
-        dir.allowExt("JPEG");
-        dir.allowExt("png");
-        dir.allowExt("PNG");
-        dir.allowExt("tiff");
-        dir.allowExt("TIFF");
-
-        dir.listDir();
-
-        if(!imageLoader.isThreadRunning() && imageLoader.loaded == false){
-            load(dir.getPath((int)ofRandom(0,dir.size())),false);
-            initImageSize++;
-        }
-    }
+//    if(initImageSize < 3){
+//        string path = "./Downloads";
+//        ofDirectory dir(path);
+//        dir.allowExt("JPG");
+//        dir.allowExt("jpg");
+//        dir.allowExt("jpeg");
+//        dir.allowExt("JPEG");
+//        dir.allowExt("png");
+//        dir.allowExt("PNG");
+//        dir.allowExt("tiff");
+//        dir.allowExt("TIFF");
+//
+//        dir.listDir();
+//
+//        if(!imageLoader.isThreadRunning() && imageLoader.loaded == false){
+//            load(dir.getPath((int)ofRandom(0,dir.size())),false);
+//            initImageSize++;
+//        }
+//    }
     
 //    cout<<videoLoader.isVideoLoaded<<endl;
     if(videoLoader1.isVideoLoaded){
@@ -56,50 +57,67 @@ void FrameObject::update(){
             
             if(new_mat.rows > 0 && new_mat.cols > 0){
                 
-                mat_vector[videoLoader1.index] = new_mat.clone();
-                
-                if(mat_vector[videoLoader1.index].cols > 0 && mat_vector[videoLoader1.index].rows > 0)
-                    isNewImageAdd = true;
-                currentImageSize = mat_vector.size();
+                try{
+                    mat_vector[videoLoader1.index] = new_mat.clone();
+                    
+                    if(mat_vector[videoLoader1.index].cols > 0 && mat_vector[videoLoader1.index].rows > 0)
+                        isNewImageAdd = true;
+                    currentImageSize = mat_vector.size();
+                }catch(cv::Exception& e){
+                    cout<<"videoLoader1 update new frame error"<<endl;
+                }
             }
+            
+            new_mat.release();
         }
     }
     
-    if(videoLoader2.isVideoLoaded){
-        videoLoader2.player.update();
-        
-        if(videoLoader2.isPixelsloaded == true){
-            
-            Mat new_mat = ROI(videoLoader2.popMat());
-            
-            if(new_mat.rows > 0 && new_mat.cols > 0){
-                
-                mat_vector[videoLoader2.index] = new_mat.clone();
-                
-                if(mat_vector[videoLoader2.index].cols > 0 && mat_vector[videoLoader2.index].rows > 0)
-                    isNewImageAdd = true;
-                currentImageSize = mat_vector.size();
-            }
-        }
-    }
-    
-    if(videoLoader3.isVideoLoaded){
-        videoLoader3.player.update();
-        
-        if(videoLoader3.isPixelsloaded == true){
-            
-            Mat new_mat = ROI(videoLoader3.popMat());
-                
-            if(new_mat.rows > 0 && new_mat.cols > 0){
-                
-                mat_vector[videoLoader3.index] = new_mat.clone();
-                if(mat_vector[videoLoader3.index].cols > 0 && mat_vector[videoLoader3.index].rows > 0)
-                    isNewImageAdd = true;
-                
-                currentImageSize = mat_vector.size();
-            }
-        }
-    }
+//    if(videoLoader2.isVideoLoaded){
+//        videoLoader2.player.update();
+//
+//        if(videoLoader2.isPixelsloaded == true){
+//
+//            Mat new_mat = ROI(videoLoader2.popMat());
+//
+//            if(new_mat.rows > 0 && new_mat.cols > 0){
+//
+//                try{
+//                    mat_vector[videoLoader2.index] = new_mat.clone();
+//
+//                    if(mat_vector[videoLoader2.index].cols > 0 && mat_vector[videoLoader2.index].rows > 0)
+//                        isNewImageAdd = true;
+//                    currentImageSize = mat_vector.size();
+//                }catch(cv::Exception& e){
+//                    cout<<"videoLoader2 update new frame error"<<endl;
+//                }
+//            }
+//            new_mat.release();
+//        }
+//    }
+//
+//    if(videoLoader3.isVideoLoaded){
+//        videoLoader3.player.update();
+//
+//        if(videoLoader3.isPixelsloaded == true){
+//
+//            Mat new_mat = ROI(videoLoader3.popMat());
+//
+//            if(new_mat.rows > 0 && new_mat.cols > 0){
+//
+//                try{
+//                    mat_vector[videoLoader3.index] = new_mat.clone();
+//                    if(mat_vector[videoLoader3.index].cols > 0 && mat_vector[videoLoader3.index].rows > 0)
+//                        isNewImageAdd = true;
+//
+//                    currentImageSize = mat_vector.size();
+//
+//                }catch(cv::Exception& e){
+//                    cout<<"videoLoader3 update new frame error"<<endl;
+//                }
+//            }
+//            new_mat.release();
+//        }
+//    }
     
     if(imageLoader.loaded == true){
         
@@ -113,13 +131,15 @@ void FrameObject::update(){
             mat_vector.push_back(new_mat.clone());
         }
         
-        if(initImageSize <3)
-            image_result = mat_vector.back().clone();
+//        if(initImageSize <3)
+//            image_result = mat_vector.back().clone();
         
         if(isFromCue)
             new_image_timer = ofGetElapsedTimeMillis();
         isNewImageAdd = true;
         currentImageSize = mat_vector.size();
+        
+        new_mat.release();
     }
     
     combine();
@@ -190,7 +210,7 @@ void FrameObject::combine(){
             try{
 //                cout<<mat_size<<endl;
                 if(mat_size >= 1){
-                    addWeighted(image_result, 1-1.0/mat_vector.size() , mat_vector.back(), 1.0/mat_vector.size(), 0, image_add_mat);
+                    addWeighted(image_result, 1-1.0/mat_size , mat_vector.back(), 1.0/mat_size, 0, image_add_mat);
                 
                     image_result = image_add_mat.clone();
                 }else{
@@ -203,6 +223,8 @@ void FrameObject::combine(){
         }
     }
     
+    image_add_mat.release();
+    
 }
 
 void FrameObject::load(string path, bool isFromCue){
@@ -213,71 +235,87 @@ void FrameObject::load(string path, bool isFromCue){
 
 void FrameObject::loadVideo(string path, bool isFromCue, int id){
     
-    cout<<path<<endl;
+    Mat emptyMat = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);;
+    mat_vector.push_back(emptyMat.clone());
+    videoLoader1.setup(path, isFromCue, mat_vector.size()-1);
     
-    if(path == videoLoader1.path || path == videoLoader2.path || path == videoLoader3.path)
-        return;
+//    cout<<path<<endl<<videoLoader1.path<<endl<<videoLoader2.path<<endl<<videoLoader3.path<<endl;;
     
-    if(ofFile::doesFileExist(path)){
-        switch(id){
-            case 0:
-            {
-                if(videoLoader1.isVideoLoaded){
-                    cout<<"video 1" << mat_vector.size() <<","<< videoLoader1.index<<endl;
-                    mat_vector.erase(mat_vector.begin() + videoLoader1.index);
-                    cout<<"video 1" << mat_vector.size()<<endl;
-                    videoLoader1.clean();
-                }
-                
-                Mat emptyMat = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);;
-                mat_vector.push_back(emptyMat);
-                
-                videoLoader1.setup(path, isFromCue, mat_vector.size()-1);
-                if(videoLoader1.isFromCue == true)
-                    new_image_timer = ofGetElapsedTimeMillis();
-                break;
-            }
-            case 1:
-            {
-                if(videoLoader2.isVideoLoaded){
-                    cout<<"video 2" << mat_vector.size() <<","<< videoLoader2.index<<endl;
-                    
-                    mat_vector.erase(mat_vector.begin() + videoLoader2.index);
-                    cout<<"video 2" << mat_vector.size()<<endl;
-                    videoLoader2.clean();
-                }
-                
-                Mat emptyMat = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);;
-                mat_vector.push_back(emptyMat);
-                
-                videoLoader2.setup(path, isFromCue, mat_vector.size()-1);
-                
-                if(videoLoader2.isFromCue == true)
-                    new_image_timer = ofGetElapsedTimeMillis();
-                break;
-            }
-            case 2:
-            {
-                if(videoLoader3.isVideoLoaded){
-                    cout<<"video 3" << mat_vector.size()<<","<< videoLoader3.index<<endl;
-                    mat_vector.erase(mat_vector.begin() + videoLoader3.index);
-                    cout<<"video 3" << mat_vector.size()<<endl;
-                    videoLoader3.clean();
-                }
-                
-                Mat emptyMat = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);;
-                mat_vector.push_back(emptyMat);
-                
-                videoLoader3.setup(path, isFromCue, mat_vector.size()-1);
-                
-                if(videoLoader3.isFromCue == true)
-                    new_image_timer = ofGetElapsedTimeMillis();
-                
-                break;
-            }
-        
-        }
-    }
+//    if(path == videoLoader1.path || path == videoLoader2.path || path == videoLoader3.path)
+//        return;
+    
+//    if(ofFile::doesFileExist(path)){
+//        switch(id){
+//            case 0:
+//            {
+//                if(videoLoader1.isVideoLoaded){
+//                    cout<<"video 1" << mat_vector.size() <<","<< videoLoader1.index<<endl;
+//
+//                    if(mat_vector.size() > videoLoader1.index){
+////                        mat_vector[videoLoader1.index].release();
+//                        mat_vector.erase(mat_vector.begin() + videoLoader1.index);
+//                        currentImageSize = mat_vector.size();
+//                    }
+//                    cout<<"video 1" << mat_vector.size()<<endl;
+//                    videoLoader1.clean();
+//                }
+//
+//                Mat emptyMat = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);;
+//                mat_vector.push_back(emptyMat.clone());
+//
+//                videoLoader1.setup(path, isFromCue, mat_vector.size()-1);
+//                if(videoLoader1.isFromCue == true)
+//                    new_image_timer = ofGetElapsedTimeMillis();
+//                break;
+//            }
+//            case 1:
+//            {
+//                if(videoLoader2.isVideoLoaded){
+//                    cout<<"video 2" << mat_vector.size() <<","<< videoLoader2.index<<endl;
+//                    if(mat_vector.size() > videoLoader2.index){
+////                        mat_vector[videoLoader2.index].release();
+//                        mat_vector.erase(mat_vector.begin() + videoLoader2.index);
+//                        currentImageSize = mat_vector.size();
+//                    }
+//                    cout<<"video 2" << mat_vector.size()<<endl;
+//                    videoLoader2.clean();
+//                }
+//
+//                Mat emptyMat = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);;
+//                mat_vector.push_back(emptyMat.clone());
+//
+//                videoLoader2.setup(path, isFromCue, mat_vector.size());
+//
+//                if(videoLoader2.isFromCue == true)
+//                    new_image_timer = ofGetElapsedTimeMillis();
+//                break;
+//            }
+//            case 2:
+//            {
+//                if(videoLoader3.isVideoLoaded){
+//                    cout<<"video 3" << mat_vector.size()<<","<< videoLoader3.index<<endl;
+//                    if(mat_vector.size() > videoLoader3.index){
+////                        mat_vector[videoLoader3.index].release();
+//                        mat_vector.erase(mat_vector.begin() + videoLoader3.index);
+//                        currentImageSize = mat_vector.size();
+//                    }
+//                    cout<<"video 3" << mat_vector.size()<<endl;
+//                    videoLoader3.clean();
+//                }
+//
+//                Mat emptyMat = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);
+//                mat_vector.push_back(emptyMat.clone());
+//
+//                videoLoader3.setup(path, isFromCue, mat_vector.size()-1);
+//
+//                if(videoLoader3.isFromCue == true)
+//                    new_image_timer = ofGetElapsedTimeMillis();
+//
+//                break;
+//            }
+//
+//        }
+//    }
 }
 
 void FrameObject::randomResizeVector(){
@@ -324,7 +362,7 @@ void FrameObject::randomResizeVector(){
                 int randomNumber = (int)ofRandom(0,dir.size());
                 if(!imageLoader.isThreadRunning() && imageLoader.loaded ==false)
                     load(dir.getPath(randomNumber),false);
-            }else{
+            }/*else{
                 //load video
                 ofDirectory dir("./Downloads");
                 dir.allowExt("mp4");
@@ -336,15 +374,15 @@ void FrameObject::randomResizeVector(){
                 int randomVideoLoader = (int)ofRandom(0,3);
                 if(!imageLoader.isThreadRunning() && imageLoader.loaded ==false)
                     loadVideo(dir.getPath(randomNumber), false, randomVideoLoader);
-            }
+            }*/
         }
         
         
         if(currentImageSize > 10-1){
             isRandomReverse = true;
-            std::reverse(mat_vector.begin()+1,mat_vector.end());
+            std::reverse(mat_vector.begin()+1, mat_vector.end());
         }
-        else if(currentImageSize <1){
+        else if(currentImageSize ==1){
             isRandomReverse = false;
         }
     }
@@ -402,7 +440,6 @@ Mat ROI(Mat new_mat){
         
         
     }else if(width_ratio <= 1 && height_ratio <= 1){
-        
         if(width_ratio >= height_ratio){
             dsize = cv::Size((int)(new_mat.cols * width_ratio), (int)(new_mat.rows * width_ratio));
             roi.x = 0;

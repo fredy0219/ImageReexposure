@@ -35,7 +35,9 @@ public:
         
         if(ofFile::doesFileExist(path)){
             
-            if(ofLoadImage(image, path)){
+            ofImageLoadSettings s;
+            s.exifRotate = true;
+            if(ofLoadImage(image, path, s)){
                 
                 try{
                     image_mat = toCv(image);
@@ -75,16 +77,13 @@ public:
         try{
             if(!isThreadRunning()){
                 index = _index;
-                player = *new ofVideoPlayer();
-                player.setPlayer(ofPtr<ofGstVideoPlayer>(new ofGstVideoPlayer));
-                this->path = videoPath;
-                
-                isPixelsloaded = false;
-                isFromCue = _isFromCue;
                 if(player.isLoaded())
                     player.close();
-                
-                
+                player = *new ofVideoPlayer();
+                player.setPlayer(ofPtr<ofGstVideoPlayer>(new ofGstVideoPlayer));
+                path = videoPath;
+                isPixelsloaded = false;
+                isFromCue = _isFromCue;
                 
                 startThread();
             }
@@ -149,6 +148,8 @@ public:
         
         lock();
         isVideoLoaded = false;
+        isPixelsloaded = false;
+        index = 0;
         path = "";
         player.stop();
         player.closeMovie();

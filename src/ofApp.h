@@ -39,9 +39,6 @@ public:
     bool isOnlyBackground = false;
     uint64 backgroundTimer;
     
-    ofVideoPlayer vp;
-    
-    
     bool hasEnding (std::string const &fullString, std::string const &ending);
     
 };
