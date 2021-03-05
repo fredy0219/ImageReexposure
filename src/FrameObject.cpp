@@ -459,6 +459,8 @@ Mat ROI(Mat new_mat){
     if(new_mat.rows > 0 && new_mat.cols > 0){
         resize(new_mat, new_mat, dsize);
         new_mat = new_mat(roi);
+    }else{
+        new_mat = cv::Mat::zeros(cv::Size(ofGetScreenWidth(),ofGetScreenHeight()), CV_8UC3);
     }
     
     return new_mat;
