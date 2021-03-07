@@ -8,6 +8,7 @@
 #ifndef UDPCenter_h
 #define UDPCenter_h
 
+#include "ofMain.h"
 #include "ofxNetwork.h"
 #include <iostream>
 #include <stdio.h>
@@ -34,6 +35,9 @@ public:
     bool getImageName(string &image_name);
     
     regex reg_standard;
+    
+    ofxUDPManager udp_watch_dog;
+    int watch_dog_timer;
     
     
     

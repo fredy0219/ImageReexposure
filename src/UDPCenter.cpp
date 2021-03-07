@@ -6,6 +6,7 @@
 //
 
 #include "UDPCenter.h"
+#include "ofMain.h"
 #include <boost/lexical_cast.hpp>
 //using namespace std;
 
@@ -14,6 +15,12 @@ void UDPCenter::setup(){
     udp_cue.Create();
     udp_cue.Bind(11999);
     udp_cue.SetNonBlocking(true);
+    
+    udp_watch_dog.Create();
+    udp_watch_dog.Connect("127.0.0.1", 54000);
+    udp_watch_dog.SetNonBlocking(true);
+    
+    
     
     reg_standard = regex("\/(add)\/([a-zA-Z0-9\-_. ]+)\/");
 }
@@ -39,6 +46,15 @@ void UDPCenter::update(){
             cout<<"not match"<<endl;
         }
     }
+    
+    if(ofGetElapsedTimeMillis() - watch_dog_timer > 5000){
+        
+        string alive = "I'm alive.";
+        udp_watch_dog.Send(alive.c_str(),alive.size());
+        watch_dog_timer = ofGetElapsedTimeMillis();
+    
+    }
+    
 }
 
 bool UDPCenter::getImageName(string &image_name){
